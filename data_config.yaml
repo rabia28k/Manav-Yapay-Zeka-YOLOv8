@@ -1,8 +1,15 @@
+# [PROJE YAPILANDIRMASI] 
+# Veri seti Google Drive üzerinde 'Proje_Ham_Veriler' klasöründe saklanmaktadır.
 
-path: /content/drive/MyDrive/MEYVE_SEBZE_FINAL_DATASET
-train: train/images
-val: valid/images
-test: test/images
+path: /content/drive/MyDrive/Proje_Ham_Veriler  # Ana veri yolu
+train: train/images   # Eğitim resimlerinin alt klasörü
+val: valid/images     # Doğrulama resimlerinin alt klasörü
 
-nc: 5
-names: ['patlican', 'muz', 'patates', 'havuc', 'salatalik']
+nc: 6
+names:
+  - patlican
+  - muz
+  - patates
+  - havuc
+  - salatalik
+  - curuk_muz
