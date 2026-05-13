@@ -18,8 +18,4 @@ Görüntü İşleme: OpenCvSharp4.
 Programlama Dili: C# (.NET 8.0/6.0).
 
 Eğitim Ortamı: Google Colab (Python & PyTorch).
-mAP@50: %96.9 (Genel Başarı)
 
-mAP@50-95: %82.0 (Hassas Konumlandırma Başarısı)
-
-En Başarılı Sınıf: Çürük Muz (%99.5 başarı ile en ayırt edici sınıf haline getirildi).
