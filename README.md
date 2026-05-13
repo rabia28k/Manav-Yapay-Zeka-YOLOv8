@@ -1,5 +1,5 @@
 🍎 Manav Asistanı: YOLOv8 & C# Real-Time Nesne Algılama
-Bu proje, görme engelli bireyler için market alışverişini kolaylaştırmayı hedefleyen, yapay zeka tabanlı bir yardımcı asistan uygulamasıdır. Sistem, kameradan gelen görüntüleri gerçek zamanlı olarak analiz eder, meyve/sebzeleri tanımlar ve sesli geri bildirim sağlar.
+Bu proje, görme engelli bireylerin market alışverişi sırasında reyonlardaki ürünleri bağımsız bir şekilde tanıyabilmesi ve miktarını öğrenebilmesi amacıyla geliştirilmiş, yapay zeka tabanlı bir asistan uygulamasıdır. Sistem, kameradan gelen görüntüleri gerçek zamanlı olarak analiz ederek meyve ve sebzeleri türlerine göre yüksek doğrulukla tanımlamakla kalmaz; aynı zamanda ekrandaki her bir ürünü tek tek sayarak toplam adet bilgisini (Örn: "3 adet elma ve 1 adet muz bulundu") anlık olarak hesaplar. Elde edilen bu veriler, kullanıcıya asenkron bir ses motoru aracılığıyla Türkçe olarak bildirilerek hem ürünün ne olduğu hem de kaç tane olduğu konusunda tam bir farkındalık sağlayan akıllı bir alışveriş deneyimi sunar.
 
 🚀 Temel Özellikler
 YOLOv8 Entegrasyonu: Google Colab üzerinde eğitilmiş özel nesne algılama modeli.
