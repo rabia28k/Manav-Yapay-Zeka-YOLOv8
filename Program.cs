@@ -6,17 +6,16 @@ using OpenCvSharp.Extensions;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using System.Runtime.Versioning;
-using System.Speech.Synthesis; // SES İÇİN EKLENDİ
+using System.Speech.Synthesis;
 
 namespace ManavAsistaniApp
 {
     [SupportedOSPlatform("windows")]
     class Program
     {
-        // Etiket sırası 
+
         static readonly string[] Labels = { "patlican", "muz", "patates", "havuc", "salatalik", "Curuk_Muz" };
 
-        // SES İÇİN DEĞİŞKENLER
         static SpeechSynthesizer synth = new SpeechSynthesizer();
         static string lastSpeech = "";
 
@@ -24,8 +23,7 @@ namespace ManavAsistaniApp
         {
             string modelPath = "best.onnx";
             using var session = new InferenceSession(modelPath);
-
-            // --- TÜRKÇE SES YAPILANDIRMASI ---
+-
             synth.Rate = 1;
             var turkishVoice = synth.GetInstalledVoices()
                 .FirstOrDefault(v => v.VoiceInfo.Culture.Name.Contains("TR") || v.VoiceInfo.Name.Contains("Turkish"));
@@ -35,13 +33,10 @@ namespace ManavAsistaniApp
                 synth.SelectVoice(turkishVoice.VoiceInfo.Name);
                 Console.WriteLine($"✅ Ses Türkçe ayarlandi: {turkishVoice.VoiceInfo.Name}");
             }
-            // ---------------------------------
 
-            // Telefon IP adresin
-            string videoUrl = "http://10.245.4.143:8080/video";
+            string videoUrl = "http://192.168.1.101:8080/video";
             using var capture = new VideoCapture(videoUrl);
 
-            // Performans için buffer'ı 1 yaptım
             capture.Set(VideoCaptureProperties.BufferSize, 1);
 
             using var window = new Window("Manav Asistani - Hizli ve Akici");
@@ -50,27 +45,22 @@ namespace ManavAsistaniApp
             Console.WriteLine("🚀 Sistem hizlandirildi! ESC ile cikabilirsiniz.");
             while (true)
             {
-                // PERFORMANS: Eski kareleri hizlica atla 
+
                 for (int i = 0; i < 5; i++) capture.Grab();
 
                 if (!capture.Retrieve(frame) || frame.Empty()) continue;
 
-                // BOYUT: Ekrani rahatlatmak icin goruntuyu %50 kucult
                 Cv2.Resize(frame, frame, new Size(frame.Width / 2, frame.Height / 2));
 
-                // Analiz icin 640x640 yap
                 using var resized = new Mat();
                 Cv2.Resize(frame, resized, new Size(640, 640));
                 var input = PrepareInput(resized);
 
-                // Modeli calistir
                 var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor("images", input) };
                 using var results = session.Run(inputs);
 
-
                 var output = results.First().AsEnumerable<float>().ToArray();
 
-                // Cizim ve sayim (currentFrameCounts her karede sifirlanir)
                 ParseAndDraw(frame, output);
 
                 window.ShowImage(frame);
@@ -87,7 +77,7 @@ namespace ManavAsistaniApp
             if (text != lastSpeech && synth.State != SynthesizerState.Speaking)
             {
                 lastSpeech = text;
-                synth.SpeakAsync(text); // SpeakAsync: Görüntü akışını dondurmaz
+                synth.SpeakAsync(text); 
             }
         }
 
@@ -154,17 +144,29 @@ namespace ManavAsistaniApp
 
                 int confidence = (int)(det.Score * 100);
                 Cv2.Rectangle(frame, det.Rect, Scalar.Lime, 2);
-                Cv2.PutText(frame, $"{label.ToUpper()} %{confidence}", new Point(det.Rect.X, det.Rect.Y - 5),
-                            HersheyFonts.HersheySimplex, 0.5, Scalar.White, 1);
+
+                Cv2.Rectangle(frame, new Rect(det.Rect.X, det.Rect.Y - 20, 115, 20), Scalar.Black, -1);
+                Cv2.PutText(frame, $"{label.ToUpper()} %{confidence}", new Point(det.Rect.X + 4, det.Rect.Y - 5),
+                            HersheyFonts.HersheySimplex, 0.45, Scalar.White, 1);
             }
 
-            // SESLENDİRME ÇAĞRISI
             Announce(currentFrameCounts);
 
+            Cv2.Circle(frame, new Point(25, 25), 8, Scalar.Lime, -1);
+            Cv2.PutText(frame, "SISTEM AKTIF", new Point(40, 31), HersheyFonts.HersheySimplex, 0.5, Scalar.Lime, 2);
+
+            int toplamUrunAdedi = currentFrameCounts.Sum(x => x.Value);
             string summary = string.Join(" | ", currentFrameCounts.Select(x => $"{x.Value} {x.Key}"));
-            Cv2.Rectangle(frame, new Rect(0, 0, frame.Width, 40), Scalar.Black, -1);
-            Cv2.PutText(frame, string.IsNullOrEmpty(summary) ? "Meyve Bekleniyor..." : $"Ekranda: {summary}",
-                        new Point(10, 25), HersheyFonts.HersheySimplex, 0.6, Scalar.Yellow, 2);
+
+            Cv2.Rectangle(frame, new Rect(frame.Width - 280, 0, 280, 130), Scalar.Black, -1);
+
+            Cv2.PutText(frame, "=== SEPET DETAYI ===", new Point(frame.Width - 260, 25), HersheyFonts.HersheySimplex, 0.55, Scalar.Cyan, 2);
+            Cv2.Line(frame, new Point(frame.Width - 260, 35), new Point(frame.Width - 20, 35), Scalar.White, 1);
+
+            Cv2.PutText(frame, $"TOPLAM URUN: {toplamUrunAdedi} ADET", new Point(frame.Width - 260, 60), HersheyFonts.HersheySimplex, 0.6, Scalar.Lime, 2);
+
+            string icerikMetni = string.IsNullOrEmpty(summary) ? "Meyve Bekleniyor..." : summary;
+            Cv2.PutText(frame, icerikMetni, new Point(frame.Width - 260, 95), HersheyFonts.HersheySimplex, 0.5, Scalar.Yellow, 1);
         }
 
         static double IntersectionOverUnion(Rect rect1, Rect rect2)
